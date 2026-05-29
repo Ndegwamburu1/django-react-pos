@@ -129,10 +129,17 @@ function DataPage({ section, title, subtitle, tabLabel, actionLabel, columns, ro
 function ContentPanel({
   activePage,
   products,
+  users,
+  setUsers,
   search,
   setSearch,
   addToCart,
   setStatus,
+  showUserForm,
+  setShowUserForm,
+  userForm,
+  setUserForm,
+  saveUser,
 }) {
   const visibleProducts = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -146,7 +153,7 @@ function ContentPanel({
   }, [products, search])
 
   const lowStock = products.filter((product) => Number(product.stock) <= 10).length
-  if (activePage === 'Users') {
+if (activePage === 'Users') {
   return (
     <div className="content-panel users-page">
       <div className="users-title">
@@ -155,10 +162,60 @@ function ContentPanel({
           <span>Manage users</span>
         </div>
 
-        <button onClick={() => setStatus('Add user clicked.')}>
-          + Add
+        <button onClick={() => setShowUserForm((open) => !open)}>
+          {showUserForm ? 'Close' : '+ Add'}
         </button>
       </div>
+
+      {showUserForm && (
+        <form className="user-form" onSubmit={saveUser}>
+          <label>
+            Username
+            <input
+              value={userForm.username}
+              onChange={(event) => setUserForm({ ...userForm, username: event.target.value })}
+              required
+            />
+          </label>
+
+          <label>
+            First name
+            <input
+              value={userForm.first_name}
+              onChange={(event) => setUserForm({ ...userForm, first_name: event.target.value })}
+            />
+          </label>
+
+          <label>
+            Last name
+            <input
+              value={userForm.last_name}
+              onChange={(event) => setUserForm({ ...userForm, last_name: event.target.value })}
+            />
+          </label>
+
+          <label>
+            Email
+            <input
+              type="email"
+              value={userForm.email}
+              onChange={(event) => setUserForm({ ...userForm, email: event.target.value })}
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              value={userForm.password}
+              onChange={(event) => setUserForm({ ...userForm, password: event.target.value })}
+              required
+            />
+          </label>
+
+          <button type="submit">Save User</button>
+        </form>
+      )}
 
       <div className="users-card">
         <div className="users-card-header">
@@ -189,25 +246,19 @@ function ContentPanel({
             <span>Action</span>
           </div>
 
-          <div className="users-row">
-            <span>admin001</span>
-            <span>001</span>
-            <span>Admin</span>
-            <span>001@gmail.com</span>
-            <span className="users-actions">Edit | Delete</span>
-          </div>
-
-          <div className="users-row">
-            <span>Moses</span>
-            <span>mr Moses Kariuki</span>
-            <span>Admin</span>
-            <span>moseskaris002@gmail.com</span>
-            <span className="users-actions">Edit | Delete</span>
-          </div>
+          {users.map((user) => (
+            <div className="users-row" key={user.id}>
+              <span>{user.username}</span>
+              <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || '-'}</span>
+              <span>{user.role || 'No role'}</span>
+              <span>{user.email || '-'}</span>
+              <span className="users-actions">Edit | Delete</span>
+            </div>
+          ))}
         </div>
 
         <div className="users-footer">
-          <span>Showing 1 to 2 of 2 entries</span>
+          <span>Showing 1 to {users.length} of {users.length} entries</span>
 
           <div className="users-pagination">
             <button>Previous</button>
@@ -477,6 +528,15 @@ export default function App() {
   const [payment, setPayment] = useState('M-Pesa')
   const [status, setStatus] = useState('Demo mode active. Start Django for live products.')
   const [lastReceipt, setLastReceipt] = useState(null)
+  const [users, setUsers] = useState([])
+  const [showUserForm, setShowUserForm] = useState(false)
+const [userForm, setUserForm] = useState({
+  username: '',
+  first_name: '',
+  last_name: '',
+  email: '',
+  password: '',
+})
   const [openMenus, setOpenMenus] = useState({
     Sell: true,
   })
@@ -498,6 +558,22 @@ export default function App() {
         setStatus('Demo mode active. Start Django with python manage.py runserver for live products.')
       })
   }, [])
+  useEffect(() => {
+  fetch('http://127.0.0.1:8000/api/users/')
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Users could not be loaded')
+      }
+
+      return response.json()
+    })
+    .then((data) => {
+      setUsers(data)
+    })
+    .catch(() => {
+      setStatus('Users could not be loaded from database.')
+    })
+}, [])
   useEffect(() => {
   function handleScroll() {
     setIsScrolled(window.scrollY > 20)
@@ -557,6 +633,39 @@ export default function App() {
     setCart([])
     setStatus(`Sale completed successfully. Receipt ${receipt}`)
   }
+  function saveUser(event) {
+  event.preventDefault()
+
+  fetch('http://127.0.0.1:8000/api/users/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userForm),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('User could not be saved')
+      }
+
+      return response.json()
+    })
+    .then((createdUser) => {
+      setUsers((currentUsers) => [...currentUsers, createdUser])
+      setUserForm({
+        username: '',
+        first_name: '',
+        last_name: '',
+        email: '',
+        password: '',
+      })
+      setShowUserForm(false)
+      setStatus('User saved to database.')
+    })
+    .catch(() => {
+      setStatus('User could not be saved. Check Django API.')
+    })
+}
 
   return (
     
@@ -665,14 +774,21 @@ export default function App() {
         <p className="status">{status}</p>
 
         <section className={activePage === 'POS' ? 'workspace' : 'workspace single'}>
-          <ContentPanel
-            activePage={activePage}
-            products={products}
-            search={search}
-            setSearch={setSearch}
-            addToCart={addToCart}
-            setStatus={setStatus}
-          />
+<ContentPanel
+  activePage={activePage}
+  products={products}
+  users={users}
+  setUsers={setUsers}
+  search={search}
+  setSearch={setSearch}
+  addToCart={addToCart}
+  setStatus={setStatus}
+  showUserForm={showUserForm}
+  setShowUserForm={setShowUserForm}
+  userForm={userForm}
+  setUserForm={setUserForm}
+  saveUser={saveUser}
+/>
 
           {activePage === 'POS' && (
             <aside className="receipt">
