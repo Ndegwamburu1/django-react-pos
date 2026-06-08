@@ -215,3 +215,46 @@ code {
   font-size: 0.85rem;
   text-align: center;
 }
+.sidebar-collapsed {
+  grid-template-columns: 84px 1fr;
+}
+
+.sidebar-collapsed .brand h1,
+.sidebar-collapsed .brand span,
+.sidebar-collapsed .nav-item strong,
+.sidebar-collapsed .chevron,
+.sidebar-collapsed .nav-submenu,
+.sidebar-collapsed .shift-card {
+  display: none;
+}
+
+.home-panel {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #dfe5df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.home-panel input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #ccd6cc;
+  border-radius: 4px;
+}
+
+.column-visibility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 14px 12px;
+}
+
+.column-visibility label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #536058;
+  font-size: 0.86rem;
+}

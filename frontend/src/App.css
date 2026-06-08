@@ -606,4 +606,131 @@ body {
   color: #ffffff;
   font-weight: 800;
   background: #2f8f4e;
+};.live-home {
+  display: grid;
+  gap: 16px;
+  background: #f4f6f4;
+}
+
+.welcome-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.kpi-grid,
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kpi-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kpi-card,
+.home-box {
+  border: 1px solid #dfe5df;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.kpi-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.home-box-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid #edf1ed;
+}
+
+.home-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 2px solid #dfe5df;
+  border-radius: 999px;
+  color: #0ea5e9;
+}
+
+.chart-placeholder {
+  display: grid;
+  min-height: 360px;
+  place-items: center;
+  color: #8a948d;
+  background: #f9faf9;
+}
+
+.home-table-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+}
+
+.export-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.export-buttons button {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid #d5ddd5;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.home-data-table {
+  overflow-x: auto;
+}
+
+.home-table-row {
+  display: grid;
+  min-width: 900px;
+  min-height: 42px;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-top: 1px solid #edf1ed;
+}
+
+.home-table-head {
+  font-weight: 800;
+}
+
+.home-empty-row {
+  padding: 14px;
+  color: #7b877e;
+  text-align: center;
+  border-top: 1px solid #edf1ed;
+}
+
+.home-table-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+@media (max-width: 900px) {
+  .kpi-grid,
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-row,
+  .home-table-footer {
+    flex-direction: column;
+  }
 }

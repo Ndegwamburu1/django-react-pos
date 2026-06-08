@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
-
+import Sidebar from './layout/Sidebar'
+import Home from './pages/Home'
+import Users from './pages/Users'
+import { createUser, getUsers } from './api/users'
+import Roles from './pages/Roles'
+import POS from './pages/POS'
 const API_URL = 'http://127.0.0.1:8000/api/products/'
 
 const demoProducts = [
@@ -12,32 +17,6 @@ const demoProducts = [
   { id: 'demo-6', name: 'Tomato Sauce 700g', barcode: '10006', category: 'Grocery', price: '180.00', stock: 14 },
 ]
 
-const navItems = [
-  { label: 'Home', children: [] },
-  { label: 'User Management', children: ['Users', 'Roles', 'Sales Commission Agents'] },
-  { label: 'Contacts', children: ['Suppliers', 'Customers', 'Customer Groups', 'Import Contacts'] },
-  {
-    label: 'Products',
-    children: ['List Products', 'Add Product', 'Print Labels', 'Variations', 'Units', 'Categories', 'Brands', 'Warranties'],
-  },
-  { label: 'Purchases', children: ['List Purchases', 'Add Purchase', 'List Purchase Return'] },
-  {
-    label: 'Sell',
-    children: ['All Sales', 'Add Sale', 'POS', 'List Drafts', 'List Quotations', 'Sell Return', 'Shipments', 'Discounts', 'Subscriptions'],
-  },
-  { label: 'Stock Transfers', children: ['List Stock Transfers', 'Add Stock Transfer'] },
-  { label: 'Stock Adjustment', children: ['List Stock Adjustments', 'Add Stock Adjustment'] },
-  { label: 'Expenses', children: ['List Expenses', 'Add Expense', 'Expense Categories'] },
-  {
-    label: 'Reports',
-    children: ['Profit / Loss Report', 'Product Stock Report', 'Sales Report', 'Purchase Report', 'Customer / Supplier Report', 'Tax Report', 'Trending Products'],
-  },
-  { label: 'Notification Templates', children: ['New Sale', 'Payment Received', 'Payment Reminder'] },
-  {
-    label: 'Settings',
-    children: ['Business Settings', 'Business Locations', 'Invoice Settings', 'Barcode Settings', 'Receipt Printers', 'Tax Rates'],
-  },
-]
 
 const quickActions = ['New Sale', 'Hold Bill', 'Return', 'Cash Drawer', 'Receipt', 'End Shift']
 const payments = ['M-Pesa', 'Cash', 'Card', 'Credit']
@@ -120,7 +99,7 @@ function DataPage({ section, title, subtitle, tabLabel, actionLabel, columns, ro
       </div>
 
       <footer className="app-footer">
-        Utmost Pos - V6.11 | Copyright © 2026 All rights reserved.
+        techaiot Pos - V6.11 | Copyright © 2026 All rights reserved.
       </footer>
     </div>
   )
@@ -130,16 +109,26 @@ function ContentPanel({
   activePage,
   products,
   users,
-  setUsers,
   search,
   setSearch,
   addToCart,
   setStatus,
+  setActivePage,
+  homeDate,
+  setHomeDate,
+  showCalculator,
+  setShowCalculator,
+  showProfit,
+  setShowProfit,
+  showNotifications,
+  setShowNotifications,
   showUserForm,
   setShowUserForm,
   userForm,
   setUserForm,
   saveUser,
+  sidebarCollapsed,
+  setSidebarCollapsed,
 }) {
   const visibleProducts = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -152,278 +141,53 @@ function ContentPanel({
     )
   }, [products, search])
 
-  const lowStock = products.filter((product) => Number(product.stock) <= 10).length
-if (activePage === 'Users') {
-  return (
-    <div className="content-panel users-page">
-      <div className="users-title">
-        <div>
-          <h3>Users</h3>
-          <span>Manage users</span>
-        </div>
-
-        <button onClick={() => setShowUserForm((open) => !open)}>
-          {showUserForm ? 'Close' : '+ Add'}
-        </button>
-      </div>
-
-      {showUserForm && (
-        <form className="user-form" onSubmit={saveUser}>
-          <label>
-            Username
-            <input
-              value={userForm.username}
-              onChange={(event) => setUserForm({ ...userForm, username: event.target.value })}
-              required
-            />
-          </label>
-
-          <label>
-            First name
-            <input
-              value={userForm.first_name}
-              onChange={(event) => setUserForm({ ...userForm, first_name: event.target.value })}
-            />
-          </label>
-
-          <label>
-            Last name
-            <input
-              value={userForm.last_name}
-              onChange={(event) => setUserForm({ ...userForm, last_name: event.target.value })}
-            />
-          </label>
-
-          <label>
-            Email
-            <input
-              type="email"
-              value={userForm.email}
-              onChange={(event) => setUserForm({ ...userForm, email: event.target.value })}
-            />
-          </label>
-
-          <label>
-            Password
-            <input
-              type="password"
-              value={userForm.password}
-              onChange={(event) => setUserForm({ ...userForm, password: event.target.value })}
-              required
-            />
-          </label>
-
-          <button type="submit">Save User</button>
-        </form>
-      )}
-
-      <div className="users-card">
-        <div className="users-card-header">
-          <strong>All users</strong>
-        </div>
-
-        <div className="users-toolbar">
-          <label>
-            Show
-            <select defaultValue="25">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-              <option>100</option>
-            </select>
-            entries
-          </label>
-
-          <input placeholder="Search ..." />
-        </div>
-
-        <div className="users-table">
-          <div className="users-row users-header">
-            <span>Username</span>
-            <span>Name</span>
-            <span>Role</span>
-            <span>Email</span>
-            <span>Action</span>
-          </div>
-
-          {users.map((user) => (
-            <div className="users-row" key={user.id}>
-              <span>{user.username}</span>
-              <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || '-'}</span>
-              <span>{user.role || 'No role'}</span>
-              <span>{user.email || '-'}</span>
-              <span className="users-actions">Edit | Delete</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="users-footer">
-          <span>Showing 1 to {users.length} of {users.length} entries</span>
-
-          <div className="users-pagination">
-            <button>Previous</button>
-            <button className="active">1</button>
-            <button>Next</button>
-          </div>
-        </div>
-      </div>
-
-      <footer className="users-copyright">
-        Utmost Pos - V6.11 | Copyright © 2026 All rights reserved.
-      </footer>
-    </div>
-  )
-}
-if (activePage === 'Roles') {
-  return (
-    <div className="content-panel users-page">
-      <div className="users-title">
-        <div>
-          <h3>Roles</h3>
-          <span>Manage roles</span>
-        </div>
-
-        <button onClick={() => setStatus('Add role clicked.')}>
-          + Add
-        </button>
-      </div>
-
-      <div className="users-card">
-        <div className="users-card-header">
-          <strong>All roles</strong>
-        </div>
-
-        <div className="users-toolbar">
-          <label>
-            Show
-            <select defaultValue="25">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-              <option>100</option>
-            </select>
-            entries
-          </label>
-
-          <input placeholder="Search ..." />
-        </div>
-
-        <div className="users-table">
-          <div className="roles-row users-header">
-            <span>Roles</span>
-            <span>Action</span>
-          </div>
-
-          <div className="roles-row">
-            <span>Admin</span>
-            <span className="users-actions">Edit | Delete</span>
-          </div>
-        </div>
-
-        <div className="users-footer">
-          <span>Showing 1 to 1 of 1 entries</span>
-
-          <div className="users-pagination">
-            <button>Previous</button>
-            <button className="active">1</button>
-            <button>Next</button>
-          </div>
-        </div>
-      </div>
-
-      <footer className="users-copyright">
-        Utmost Pos - V6.11 | Copyright © 2026 All rights reserved.
-      </footer>
-    </div>
-  )
-}
+  if (activePage === 'Users') {
+    return (
+      <Users
+        users={users}
+        showUserForm={showUserForm}
+        setShowUserForm={setShowUserForm}
+        userForm={userForm}
+        setUserForm={setUserForm}
+        saveUser={saveUser}
+      />
+    )
+  }
 
   if (activePage === 'Home') {
     return (
-      <div className="content-panel">
-        <div className="panel-head">
-          <div>
-            <span>Dashboard</span>
-            <h3>Home</h3>
-          </div>
-        </div>
-
-        <div className="dashboard-stats">
-          <div className="stat-card">
-            <span>Today's Sales</span>
-            <strong>{money(48250)}</strong>
-            <small>Counter revenue</small>
-          </div>
-          <div className="stat-card">
-            <span>Total Orders</span>
-            <strong>87</strong>
-            <small>Sales activity</small>
-          </div>
-          <div className="stat-card">
-            <span>Low Stock Items</span>
-            <strong>{lowStock}</strong>
-            <small>Needs attention</small>
-          </div>
-          <div className="stat-card">
-            <span>Cash Balance</span>
-            <strong>{money(16300)}</strong>
-            <small>Current drawer</small>
-          </div>
-        </div>
-      </div>
+      <Home
+        homeDate={homeDate}
+        setHomeDate={setHomeDate}
+        showCalculator={showCalculator}
+        setShowCalculator={setShowCalculator}
+        showProfit={showProfit}
+        setShowProfit={setShowProfit}
+        showNotifications={showNotifications}
+        setShowNotifications={setShowNotifications}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        setActivePage={setActivePage}
+        setStatus={setStatus}
+      />
     )
   }
+
+if (activePage === 'Roles') {
+  return <Roles setStatus={setStatus} />
+}
 
   if (activePage === 'POS') {
-    return (
-      <div className="sell-panel">
-        <div className="panel-head">
-          <div>
-            <span>Point of Sale</span>
-            <h3>POS</h3>
-          </div>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search or scan barcode"
-          />
-        </div>
-
-        <div className="quick-actions">
-          {quickActions.map((action) => (
-            <button key={action} onClick={() => setStatus(`${action} clicked.`)}>
-              {action}
-            </button>
-          ))}
-        </div>
-
-        <div className="product-table">
-          <div className="product-row table-head">
-            <span>Item</span>
-            <span>Category</span>
-            <span>Stock</span>
-            <span>Price</span>
-            <span></span>
-          </div>
-
-          {visibleProducts.map((product) => (
-            <div className="product-row" key={product.id}>
-              <div>
-                <strong>{product.name}</strong>
-                <small>{product.barcode || 'No barcode'}</small>
-              </div>
-              <span>{product.category_name || product.category || 'General'}</span>
-              <span className={Number(product.stock) <= 10 ? 'stock low' : 'stock'}>
-                {product.stock}
-              </span>
-              <strong>{money(product.price)}</strong>
-              <button onClick={() => addToCart(product)}>Add</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  return (
+    <POS
+      products={products}
+      search={search}
+      setSearch={setSearch}
+      addToCart={addToCart}
+      setStatus={setStatus}
+    />
+  )
+}
 
   if (activePage === 'List Products') {
     return (
@@ -468,57 +232,23 @@ if (activePage === 'Roles') {
     )
   }
 
-  if (activePage.startsWith('Add ')) {
-    return (
-      <FormPage
-        section="Create Record"
-        title={activePage}
-        fields={['Name', 'Reference', 'Amount', 'Date']}
-        setStatus={setStatus}
-      />
-    )
-  }
-
-  const pageRows = {
-    Users: {
-  section: 'Users',
-  subtitle: 'Manage users',
-  tab: 'All users',
-  action: '+ Add',
-  columns: ['Username', 'Name', 'Role', 'Email', 'Action'],
-  rows: [
-    ['admin001', '001', 'Admin', '001@gmail.com', 'Edit | Delete'],
-    ['Moses', 'mr Moses Kariuki', 'Admin', 'moseskaris002@gmail.com', 'Edit | Delete'],
-  ],
-},
-    Roles: [
-      { name: 'Admin', details: 'Full system access', status: 'Active' },
-      { name: 'Cashier', details: 'POS and sales access', status: 'Active' },
-      { name: 'Manager', details: 'Reports and management', status: 'Active' },
-    ],
-    Suppliers: [
-      { name: 'Bakery Supplies Ltd', details: 'Nairobi supplier', status: 'Active' },
-      { name: 'Fresh Dairy Co', details: 'Dairy supplier', status: 'Active' },
-    ],
-    Customers: [
-      { name: 'Walk-in Customer', details: 'Default customer', status: 'Active' },
-      { name: 'Jane Smith', details: 'Credit customer', status: 'Active' },
-    ],
-  }
-
   return (
     <DataPage
-      section="I Plus Butchery"
+      section="Techaiot POS"
       title={activePage}
+      subtitle="This page is ready for the next build step."
+      tabLabel={`All ${activePage}`}
       actionLabel={`+ Add ${activePage.replace('List ', '')}`}
-      rows={pageRows[activePage] || [
-        { name: activePage, details: 'This page is ready for backend data.', status: 'Draft' },
-        { name: 'Sample Record', details: 'Placeholder while building the POS.', status: 'Active' },
+      columns={['Name', 'Details', 'Status', 'Action']}
+      rows={[
+        [activePage, 'This page is ready for backend data.', 'Draft', 'Open'],
+        ['Sample Record', 'Placeholder while building the POS.', 'Active', 'Edit'],
       ]}
       setStatus={setStatus}
     />
   )
 }
+
 
 export default function App() {
   const [products, setProducts] = useState(demoProducts)
@@ -530,6 +260,11 @@ export default function App() {
   const [lastReceipt, setLastReceipt] = useState(null)
   const [users, setUsers] = useState([])
   const [showUserForm, setShowUserForm] = useState(false)
+  const [homeDate, setHomeDate] = useState('2026-06-07')
+const [showCalculator, setShowCalculator] = useState(false)
+const [showProfit, setShowProfit] = useState(false)
+const [showNotifications, setShowNotifications] = useState(false)
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 const [userForm, setUserForm] = useState({
   username: '',
   first_name: '',
@@ -558,15 +293,8 @@ const [userForm, setUserForm] = useState({
         setStatus('Demo mode active. Start Django with python manage.py runserver for live products.')
       })
   }, [])
-  useEffect(() => {
-  fetch('http://127.0.0.1:8000/api/users/')
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Users could not be loaded')
-      }
-
-      return response.json()
-    })
+useEffect(() => {
+  getUsers()
     .then((data) => {
       setUsers(data)
     })
@@ -636,20 +364,7 @@ const [userForm, setUserForm] = useState({
   function saveUser(event) {
   event.preventDefault()
 
-  fetch('http://127.0.0.1:8000/api/users/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userForm),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('User could not be saved')
-      }
-
-      return response.json()
-    })
+  createUser(userForm)
     .then((createdUser) => {
       setUsers((currentUsers) => [...currentUsers, createdUser])
       setUserForm({
@@ -669,71 +384,14 @@ const [userForm, setUserForm] = useState({
 
   return (
     
-      <div className={isScrolled ? 'pos-shell scrolled' : 'pos-shell'}>
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-icon">IP</div>
-          <div>
-            <span>Business</span>
-            <h1>I Plus Butchery</h1>
-          </div>
-        </div>
-
-        <nav>
-          {navItems.map((item) => {
-            const isOpen = openMenus[item.label]
-            const hasChildren = item.children.length > 0
-            const hasActiveChild = item.children.includes(activePage)
-            const isActive = activePage === item.label || hasActiveChild
-
-            return (
-              <div className="nav-group" key={item.label}>
-                <button
-                  className={isActive ? 'nav-item active' : 'nav-item'}
-                  onClick={() => {
-                    if (hasChildren) {
-                      setOpenMenus((menus) => ({
-                        ...menus,
-                        [item.label]: !menus[item.label],
-                      }))
-                    } else {
-                      setActivePage(item.label)
-                      setStatus(`${item.label} selected.`)
-                    }
-                  }}
-                >
-                  <span>{item.label.slice(0, 2)}</span>
-                  <strong>{item.label}</strong>
-                  {hasChildren && <em className="chevron">{isOpen ? '-' : '+'}</em>}
-                </button>
-
-                {hasChildren && isOpen && (
-                  <div className="nav-submenu">
-                    {item.children.map((child) => (
-                      <button
-                        className={activePage === child ? 'nav-subitem active' : 'nav-subitem'}
-                        key={child}
-                        onClick={() => {
-                          setActivePage(child)
-                          setStatus(`${child} selected.`)
-                        }}
-                      >
-                        {child}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </nav>
-
-        <div className="shift-card">
-          <span>Current Shift</span>
-          <strong>Counter 01 Open</strong>
-          <small>Cashier: Admin User</small>
-        </div>
-      </aside>
+      <div className={`${isScrolled ? 'pos-shell scrolled' : 'pos-shell'} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <Sidebar
+  activePage={activePage}
+  setActivePage={setActivePage}
+  openMenus={openMenus}
+  setOpenMenus={setOpenMenus}
+  setStatus={setStatus}
+/>
 
       <main className="main">
         {activePage === 'POS' && (
@@ -783,11 +441,22 @@ const [userForm, setUserForm] = useState({
   setSearch={setSearch}
   addToCart={addToCart}
   setStatus={setStatus}
+  setActivePage={setActivePage}
+  homeDate={homeDate}
+  setHomeDate={setHomeDate}
+  showCalculator={showCalculator}
+  setShowCalculator={setShowCalculator}
+  showProfit={showProfit}
+  setShowProfit={setShowProfit}
+  showNotifications={showNotifications}
+  setShowNotifications={setShowNotifications}
   showUserForm={showUserForm}
   setShowUserForm={setShowUserForm}
   userForm={userForm}
   setUserForm={setUserForm}
   saveUser={saveUser}
+  sidebarCollapsed={sidebarCollapsed}
+setSidebarCollapsed={setSidebarCollapsed}
 />
 
           {activePage === 'POS' && (
