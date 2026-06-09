@@ -6,6 +6,14 @@ import Users from './pages/Users'
 import { createUser, getUsers } from './api/users'
 import Roles from './pages/Roles'
 import POS from './pages/POS'
+import Products from './pages/Products'
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+}
+ from './api/products'
 const API_URL = 'http://127.0.0.1:8000/api/products/'
 
 const demoProducts = [
@@ -105,9 +113,21 @@ function DataPage({ section, title, subtitle, tabLabel, actionLabel, columns, ro
   )
 }
 
+const productPages = [
+  'List Products',
+  'Add Product',
+  'Print Labels',
+  'Variations',
+  'Units',
+  'Categories',
+  'Brands',
+  'Warranties',
+]
+
 function ContentPanel({
   activePage,
   products,
+  setProducts,
   users,
   search,
   setSearch,
@@ -188,49 +208,19 @@ if (activePage === 'Roles') {
     />
   )
 }
-
-  if (activePage === 'List Products') {
-    return (
-      <div className="content-panel">
-        <div className="panel-head">
-          <div>
-            <span>Products</span>
-            <h3>List Products</h3>
-          </div>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search products"
-          />
-        </div>
-
-        <div className="product-table">
-          <div className="product-row table-head">
-            <span>Item</span>
-            <span>Category</span>
-            <span>Stock</span>
-            <span>Price</span>
-            <span>Actions</span>
-          </div>
-
-          {visibleProducts.map((product) => (
-            <div className="product-row" key={product.id}>
-              <div>
-                <strong>{product.name}</strong>
-                <small>{product.barcode || 'No barcode'}</small>
-              </div>
-              <span>{product.category_name || product.category || 'General'}</span>
-              <span className={Number(product.stock) <= 10 ? 'stock low' : 'stock'}>
-                {product.stock}
-              </span>
-              <strong>{money(product.price)}</strong>
-              <button onClick={() => setStatus(`Edit ${product.name}`)}>Edit</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+if (productPages.includes(activePage)) {
+  return (
+    <Products
+      activePage={activePage}
+      products={products}
+      setProducts={setProducts}
+      setStatus={setStatus}
+      createProduct={createProduct}
+      updateProduct={updateProduct}
+      deleteProduct={deleteProduct}
+    />
+  )
+}
 
   return (
     <DataPage
@@ -261,11 +251,11 @@ export default function App() {
   const [users, setUsers] = useState([])
   const [showUserForm, setShowUserForm] = useState(false)
   const [homeDate, setHomeDate] = useState('2026-06-07')
-const [showCalculator, setShowCalculator] = useState(false)
-const [showProfit, setShowProfit] = useState(false)
-const [showNotifications, setShowNotifications] = useState(false)
-const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-const [userForm, setUserForm] = useState({
+  const [showCalculator, setShowCalculator] = useState(false)
+  const [showProfit, setShowProfit] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [userForm, setUserForm] = useState({
   username: '',
   first_name: '',
   last_name: '',
@@ -277,22 +267,19 @@ const [userForm, setUserForm] = useState({
   })
   const [isScrolled, setIsScrolled] = useState(false)
 
-  useEffect(() => {
-    fetch(API_URL)
-      .then((response) => {
-        if (!response.ok) throw new Error('Products unavailable')
-        return response.json()
-      })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data)
-          setStatus('Live products loaded from Django.')
-        }
-      })
-      .catch(() => {
-        setStatus('Demo mode active. Start Django with python manage.py runserver for live products.')
-      })
-  }, [])
+useEffect(() => {
+  getProducts()
+    .then((data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        setProducts(data)
+        setStatus('Live products loaded from Django.')
+      }
+    })
+    .catch(() => {
+      setStatus('Demo mode active. Start Django with python manage.py runserver for live products.')
+    })
+}, [])
+
 useEffect(() => {
   getUsers()
     .then((data) => {
@@ -456,7 +443,8 @@ useEffect(() => {
   setUserForm={setUserForm}
   saveUser={saveUser}
   sidebarCollapsed={sidebarCollapsed}
-setSidebarCollapsed={setSidebarCollapsed}
+  setSidebarCollapsed={setSidebarCollapsed}
+  setProducts={setProducts}
 />
 
           {activePage === 'POS' && (
