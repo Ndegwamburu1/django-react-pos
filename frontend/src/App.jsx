@@ -7,6 +7,14 @@ import { createUser, getUsers } from './api/users'
 import Roles from './pages/Roles'
 import POS from './pages/POS'
 import Products from './pages/Products'
+import Contacts from './pages/Contacts'
+import Purchases from './pages/Purchases'
+import Sell from './pages/Sell'
+import Stock from './pages/Stock'
+import Expenses from './pages/Expenses'
+import Reports from './pages/Reports'
+import NotificationTemplates from './pages/NotificationTemplates'
+import Settings from './pages/Settings'
 import {
   createProduct,
   deleteProduct,
@@ -123,6 +131,60 @@ const productPages = [
   'Brands',
   'Warranties',
 ]
+const contactPages = [
+  'Suppliers',
+  'Customers',
+  'Customer Groups',
+  'Import Contacts',
+]
+const purchasePages = [
+  'List Purchases',
+  'Add Purchase',
+  'List Purchase Return',
+]
+const sellPages = [
+  'All Sales',
+  'Add Sale',
+  'List Drafts',
+  'List Quotations',
+  'Sell Return',
+  'Shipments',
+  'Discounts',
+  'Subscriptions',
+]
+const stockPages = [
+  'List Stock Transfers',
+  'Add Stock Transfer',
+  'List Stock Adjustments',
+  'Add Stock Adjustment',
+]
+const expensePages = [
+  'List Expenses',
+  'Add Expense',
+  'Expense Categories',
+]
+const reportPages = [
+  'Profit / Loss Report',
+  'Product Stock Report',
+  'Sales Report',
+  'Purchase Report',
+  'Customer / Supplier Report',
+  'Tax Report',
+  'Trending Products',
+]
+const notificationPages = [
+  'New Sale',
+  'Payment Received',
+  'Payment Reminder',
+]
+const settingPages = [
+  'Business Settings',
+  'Business Locations',
+  'Invoice Settings',
+  'Barcode Settings',
+  'Receipt Printers',
+  'Tax Rates',
+]
 
 function ContentPanel({
   activePage,
@@ -196,6 +258,9 @@ function ContentPanel({
 if (activePage === 'Roles') {
   return <Roles setStatus={setStatus} />
 }
+if (activePage === 'Sales Commission Agents') {
+  return <SalesCommissionAgents setStatus={setStatus} />
+}
 
   if (activePage === 'POS') {
   return (
@@ -220,6 +285,36 @@ if (productPages.includes(activePage)) {
       deleteProduct={deleteProduct}
     />
   )
+}
+if (contactPages.includes(activePage)) {
+  return <Contacts activePage={activePage} setStatus={setStatus} />
+}
+if (purchasePages.includes(activePage)) {
+  return <Purchases activePage={activePage} setStatus={setStatus} />
+}
+if (sellPages.includes(activePage)) {
+  return (
+    <Sell
+      activePage={activePage}
+      setStatus={setStatus}
+      setActivePage={setActivePage}
+    />
+  )
+}
+if (stockPages.includes(activePage)) {
+  return <Stock activePage={activePage} setStatus={setStatus} />
+}
+if (expensePages.includes(activePage)) {
+  return <Expenses activePage={activePage} setStatus={setStatus} />
+}
+if (reportPages.includes(activePage)) {
+  return <Reports activePage={activePage} setStatus={setStatus} />
+}
+if (notificationPages.includes(activePage)) {
+  return <NotificationTemplates activePage={activePage} setStatus={setStatus} />
+}
+if (settingPages.includes(activePage)) {
+  return <Settings activePage={activePage} setStatus={setStatus} />
 }
 
   return (
@@ -255,6 +350,7 @@ export default function App() {
   const [showProfit, setShowProfit] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [theme, setTheme] = useState('light')
   const [userForm, setUserForm] = useState({
   username: '',
   first_name: '',
@@ -371,7 +467,7 @@ useEffect(() => {
 
   return (
     
-      <div className={`${isScrolled ? 'pos-shell scrolled' : 'pos-shell'} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+<div className={`${isScrolled ? 'pos-shell scrolled' : 'pos-shell'} ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
       <Sidebar
   activePage={activePage}
   setActivePage={setActivePage}
@@ -380,7 +476,18 @@ useEffect(() => {
   setStatus={setStatus}
 />
 
+
       <main className="main">
+<div className="top-actions">
+  <button
+    className="theme-icon-button"
+    title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+    aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+    onClick={() => setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark')}
+  >
+    {theme === 'dark' ? '☀' : '☾'}
+  </button>
+</div>
         {activePage === 'POS' && (
   <header className="hero">
     <div>
@@ -515,3 +622,4 @@ useEffect(() => {
     </div>
   )
 }
+
